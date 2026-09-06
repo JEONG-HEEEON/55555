@@ -1,0 +1,8 @@
+# Vercel Python 런타임이 이 파일을 보고 서버리스 함수 의존성을 설치한다.
+# 로컬 개발용은 backend/requirements.txt 를 사용한다.
+# (uvicorn 은 Vercel에서 불필요해 제외 — 런타임이 ASGI 앱을 직접 실행한다.)
+fastapi==0.115.0
+firebase-admin==6.5.0
+openai==1.51.0
+python-dotenv==1.0.1
+pydantic==2.9.2

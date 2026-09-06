@@ -9,14 +9,15 @@
 - Backend: FastAPI, Pydantic, firebase-admin (Firestore), openai SDK
 - Frontend: HTML / CSS / JavaScript (바닐라, Chart.js CDN만 사용)
 - DB: Firebase Firestore
-- 배포: Render(백엔드), Vercel(프론트엔드)
+- 배포: Vercel 단일 프로젝트 (프론트 = 정적 호스팅, 백엔드 = Python 서버리스 함수)
+  - 대안으로 Render(백엔드) + Vercel(프론트엔드) 분리 배포도 가능 (6-2 참고)
 
 ## 3. 배포 URL
 | 항목 | 주소 |
 |---|---|
 | 프론트엔드 | (Vercel 배포 후 이 자리에 채워주세요) |
-| 백엔드 API | (Render 배포 후 이 자리에 채워주세요) |
-| Swagger UI | `{백엔드 URL}/docs` |
+| 백엔드 API | `{Vercel URL}/api` (같은 도메인) |
+| Swagger UI | `{Vercel URL}/docs` |
 
 ## 4. 로컬 실행 방법
 
@@ -43,7 +44,8 @@ cd frontend
 python3 -m http.server 5500
 # http://localhost:5500 접속
 ```
-`config.js`의 `API_BASE_URL`을 로컬 백엔드 주소(기본 http://localhost:8000)로 맞춰주세요.
+`config.js`는 접속 호스트가 localhost/127.0.0.1이면 자동으로 `http://localhost:8000`을 쓰고,
+배포 환경에서는 같은 오리진(상대경로 `/api/...`)을 씁니다. 따로 수정할 필요가 없습니다.
 
 ## 5. 환경 변수 (최소 세트)
 | 변수명 | 설명 |
@@ -70,11 +72,49 @@ python3 -m http.server 5500
    첫 요청에 10~50초가량 지연될 수 있습니다. 프론트에서는 로딩 표시("AI가 답변을
    작성하는 중...")로 이를 안내하고 있습니다.
 
-### 6-3. Vercel (프론트엔드)
-1. Vercel → New Project → `frontend` 폴더를 루트로 지정해 배포.
-2. 배포 후 `config.js`의 `API_BASE_URL`을 Render에서 받은 백엔드 URL로 수정 후 재배포
-   (또는 Vercel 환경변수 + 빌드 시 치환 스크립트 사용).
-3. Render 환경변수 `ALLOWED_ORIGINS`에 이 Vercel 주소를 추가.
+### 6-3. Vercel (프론트 + 백엔드 한 번에) — 권장
+
+저장소 루트에 배포 설정이 이미 들어 있어, 저장소만 연결하면 바로 배포됩니다.
+
+| 파일 | 역할 |
+|---|---|
+| `vercel.json` | `frontend/`를 정적 루트로 서빙하고, `/api/*`·`/docs`·`/openapi.json`을 Python 함수로 라우팅 |
+| `api/index.py` | Vercel용 진입점. `backend/app/main.py`의 FastAPI `app`을 그대로 재사용 |
+| `requirements.txt` (루트) | 서버리스 함수 의존성 (로컬 개발은 `backend/requirements.txt` 사용) |
+
+**배포 순서**
+1. https://vercel.com 로그인 → **Add New… > Project** → 이 GitHub 저장소를 Import.
+2. **Root Directory는 저장소 루트 그대로 둡니다** (`frontend`로 바꾸지 마세요 —
+   `vercel.json`이 이미 `outputDirectory: "frontend"`로 지정합니다).
+   Framework Preset은 `Other`, Build Command는 비워둡니다.
+3. **Environment Variables**에 아래를 등록합니다 (5장 표 참고).
+   - `OPENAI_API_KEY`
+   - `OPENAI_BASE_URL` (사용 중인 경우에만)
+   - `OPENAI_MODEL`
+   - `FIREBASE_SERVICE_ACCOUNT_JSON` — 서비스 계정 JSON **전체를 한 줄로**
+   - `ALLOWED_ORIGINS` — 프론트와 API가 같은 도메인이라 CORS는 사실상 필요 없지만,
+     외부에서 API를 호출할 계획이면 해당 주소를 넣습니다.
+4. **Deploy**를 누릅니다.
+5. 배포 후 확인:
+   - `https://{프로젝트}.vercel.app/` → 챗봇 화면
+   - `https://{프로젝트}.vercel.app/docs` → Swagger UI
+   - `https://{프로젝트}.vercel.app/api/data` → 데이터 목록 JSON
+
+**알아둘 점**
+- 환경변수를 나중에 추가/수정하면 **Redeploy를 해야** 반영됩니다.
+- `firebase-admin`(grpcio 포함)이 무거워 콜드스타트 시 첫 요청이 몇 초 걸릴 수 있습니다.
+- OpenAI 응답이 길어질 수 있어 함수 `maxDuration`을 60초로 잡아두었습니다
+  (Hobby 플랜 상한). 그보다 오래 걸리면 타임아웃됩니다.
+- 서버리스 함수는 요청마다 초기화될 수 있어 로컬 파일에 상태를 저장하면 안 됩니다.
+  이 프로젝트는 상태를 전부 Firestore에 두므로 문제 없습니다.
+
+### 6-4. (대안) Render 백엔드 + Vercel 프론트 분리 배포
+6-2로 백엔드를 Render에 올린 뒤, `frontend/index.html`의 `config.js` 로드 **앞**에
+아래 한 줄을 넣으면 프론트가 Render 백엔드를 바라봅니다.
+```html
+<script>window.API_BASE_URL = "https://your-backend.onrender.com";</script>
+```
+이 경우 Render의 `ALLOWED_ORIGINS`에 Vercel 주소를 반드시 추가해야 합니다.
 
 ## 7. 제출 스크린샷 체크리스트
 - [ ] 데이터 요약이 보이는 채팅 화면 (질문 + 답변 포함)
