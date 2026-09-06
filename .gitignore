@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# 가상환경
+venv/
+.venv/
+env/
+
+# 환경변수 / 비밀키
+.env
+.env.*
+!.env.example
+*serviceAccount*.json
+*serviceaccount*.json
+*.pem
+*.key
+
+# OS / 에디터
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>시계열 데이터 AI 분석 챗봇</title>
+<link rel="stylesheet" href="style.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <h1>📈 시계열 데이터 AI 분석 챗봇</h1>
+    <button id="darkModeToggle" class="icon-btn" title="다크모드 전환">🌙</button>
+  </header>
+
+  <main class="layout">
+    <!-- 좌측: 데이터 관리 + 요약 + 대화기록 -->
+    <aside class="sidebar">
+      <section class="panel">
+        <h2>데이터 요약</h2>
+        <div id="summaryBox" class="summary-box">불러오는 중...</div>
+        <canvas id="trendChart" height="140"></canvas>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>데이터 관리</h2>
+          <div>
+            <button id="exportCsvBtn" class="small-btn">CSV 내보내기</button>
+            <button id="exportJsonBtn" class="small-btn">JSON 내보내기</button>
+          </div>
+        </div>
+        <form id="dataForm" class="data-form">
+          <input type="date" id="dataDate" required />
+          <input type="number" step="0.1" id="dataValue" placeholder="값" required />
+          <input type="text" id="dataMemo" placeholder="메모(선택)" />
+          <button type="submit">추가</button>
+        </form>
+        <ul id="dataList" class="data-list"></ul>
+      </section>
+
+      <section class="panel">
+        <h2>대화 기록</h2>
+        <ul id="conversationList" class="conversation-list"></ul>
+      </section>
+    </aside>
+
+    <!-- 우측: 채팅 -->
+    <section class="chat-panel">
+      <div id="chatWindow" class="chat-window"></div>
+      <div id="loadingIndicator" class="loading-indicator hidden">AI가 답변을 작성하는 중...</div>
+      <form id="chatForm" class="chat-form">
+        <input type="text" id="chatInput" placeholder="데이터에 대해 질문해보세요 (예: 이번 달 추세 어때?)" required />
+        <button type="submit">전송</button>
+      </form>
+    </section>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
