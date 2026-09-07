@@ -65,12 +65,6 @@ def run_chat(history: list, all_data_items: list) -> dict:
         messages=messages,
         tools=TOOLS,
     )
-    choice = response.choices[0]
-    print("=== DEBUG ===")
-    print("finish_reason:", choice.finish_reason)
-    print("tool_calls:", choice.message.tool_calls)
-    print("content:", repr(choice.message.content))
-    print("=============")
 
     # GPT가 도구 호출을 요청한 경우 처리
     if choice.finish_reason == "tool_calls" and choice.message.tool_calls:
