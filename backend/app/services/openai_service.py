@@ -17,8 +17,8 @@ def get_client() -> OpenAI:
         _client = OpenAI(**client_kwargs)
     return _client
 
+
 # ---- 보너스: Function Calling 스키마 ----
-# GPT가 필요하다고 판단하면 아래 두 "도구"를 스스로 호출할 수 있음
 TOOLS = [
     {
         "type": "function",
@@ -65,6 +65,7 @@ def run_chat(history: list, all_data_items: list) -> dict:
         messages=messages,
         tools=TOOLS,
     )
+    choice = response.choices[0]
 
     # GPT가 도구 호출을 요청한 경우 처리
     if choice.finish_reason == "tool_calls" and choice.message.tool_calls:
@@ -80,7 +81,6 @@ def run_chat(history: list, all_data_items: list) -> dict:
                         "content": json.dumps(stats_result, ensure_ascii=False),
                     }
                 )
-        # 도구 결과를 반영해 최종 응답 재요청
         response = client.chat.completions.create(
             model=OPENAI_MODEL,
             max_tokens=OPENAI_MAX_TOKENS,
@@ -95,4 +95,4 @@ def run_chat(history: list, all_data_items: list) -> dict:
             f"model={OPENAI_MODEL}, usage={getattr(response, 'usage', None)}"
         )
 
-    return {"reply": choice.message.content, "used_tools": used_tools}
+    return {"reply": reply_text, "used_tools": used_tools}
