@@ -1,3 +1,12 @@
+import sys
+
+# 배포 환경(Render 등)의 기본 콘솔 인코딩이 ascii인 경우가 있어,
+# 한글 등 비-ASCII 문자를 출력/로그할 때 UnicodeEncodeError가 나는 것을 방지
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import ALLOWED_ORIGINS
