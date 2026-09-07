@@ -1,3 +1,5 @@
+import traceback
+from datetime import datetime, timezone
 from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException
 from app.database import get_db, CONVERSATIONS_COLLECTION
@@ -26,9 +28,12 @@ def chat(req: ChatRequest):
 
     # 2) 데이터 요약 조회 + 3) GPT 호출 (컨텍스트 주입은 openai_service 내부에서 처리)
     all_items = _fetch_all_items()
-    try:
+        try:
         result = run_chat(history, all_items)
     except Exception as e:
+        print("=== /api/chat 에러 발생, 전체 traceback ===")
+        traceback.print_exc()
+        print("=========================================")
         raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {e}")
 
     history.append({"role": "assistant", "content": result["reply"]})
