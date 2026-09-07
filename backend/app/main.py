@@ -25,4 +25,11 @@ app.include_router(chat.router)
 @app.get("/")
 def health_check():
     # Render 무료 티어 콜드스타트 확인용 헬스체크 엔드포인트
-    return {"status": "ok", "message": "API가 정상 동작 중입니다."}
+    import httpx
+    import openai
+    return {
+        "status": "ok",
+        "message": "API가 정상 동작 중입니다.",
+        "httpx_version": httpx.__version__,
+        "openai_version": openai.__version__,
+    }
