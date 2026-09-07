@@ -7,4 +7,4 @@ const LOCAL_HOSTS = ["localhost", "127.0.0.1", ""];
 
 const API_BASE_URL =
   window.API_BASE_URL ??
-  (LOCAL_HOSTS.includes(location.hostname) ? "http://localhost:8000" : "");
+  (LOCAL_HOSTS.includes(location.hostname) ? "http://localhost:8000" : "https://five5555-31xp.onrender.com");
