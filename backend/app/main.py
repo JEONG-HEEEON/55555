@@ -41,4 +41,5 @@ def health_check():
         "message": "API가 정상 동작 중입니다.",
         "httpx_version": httpx.__version__,
         "openai_version": openai.__version__,
+        "utf8_fix_applied": True,
     }
